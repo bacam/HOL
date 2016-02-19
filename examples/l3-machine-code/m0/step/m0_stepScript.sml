@@ -394,6 +394,12 @@ val Aligned_SP = utilsLib.ustore_thm("Aligned_SP",
    \\ blastLib.BBLAST_TAC
    )
 
+val Aligned_SP_neg = utilsLib.ustore_thm("Aligned_SP_neg",
+   `aligned 2 (sp:word32) ==> (sp - 4w * a && 0xFFFFFFFCw = sp - 4w * a)`,
+   simp [alignmentTheory.aligned_extract]
+   \\ blastLib.BBLAST_TAC
+   )
+
 val Aligned_Branch9 = utilsLib.ustore_thm("Aligned_Branch9",
    `aligned 1 (w:word32) ==>
     (((31 >< 1)

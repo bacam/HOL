@@ -545,8 +545,8 @@ in
          |> addThms
    val Push_rwt =
       EV [PUSH, STM_UPTO_def, IncPC_rwt, LR_def, R_name_rwt, write'R_name_rwt,
-          write'MemA_4_rwt, write'SP_def, m0_stepTheory.R_x_not_pc,
-          count_list_8] [] []
+          write'MemA_4_rwt, write'SP_def, Aligned_SP_neg,
+          m0_stepTheory.R_x_not_pc, count_list_8] [] []
          ``dfn'Push (registers)``
          |> List.map
              (utilsLib.ALL_HYP_CONV_RULE
