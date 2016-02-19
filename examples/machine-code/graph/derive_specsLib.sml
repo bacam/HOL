@@ -359,20 +359,6 @@ fun pull_let_wider_CONV tm = let
     THEN REWRITE_TAC [])
   in lemma end handle HOL_ERR _ => NO_CONV tm;
 
-local
-  val pc_var1 = mk_var("pc",``:word32``)
-  val pc_var2 = mk_var("p",``:word32``)
-  val arm_PC_pat = ``arm_PC t``
-in
-  fun inst_pc pos th = let
-    val new_pc = ``n2w ^(numSyntax.term_of_int pos):word32``
-    val th = INST [pc_var1 |-> new_pc, pc_var2 |-> new_pc] th
-    val tms = find_terms (can (match_term ``arm_PC t``)) (rand (concl th))
-    val rws = map (QCONV (RAND_CONV EVAL)) tms
-    val th = ONCE_REWRITE_RULE rws th
-    in th end
-end
-
 fun mk_call_tag fname is_tail_call = let
   val b = if is_tail_call then T else F
   val fname_tm = stringSyntax.fromMLstring fname
@@ -392,6 +378,21 @@ fun derive_individual_specs code = let
     val (n,ty) = dest_var v
     in mk_var (prefix ^ "@" ^ n, ty) end
   val (f,_,hide_th,pc) = tools
+
+local
+  val pc_var1 = mk_var("pc",``:word32``)
+  val pc_var2 = mk_var("p",``:word32``)
+  val arm_PC_pat = ``^pc t``
+in
+  fun inst_pc pos th = let
+    val new_pc = ``n2w ^(numSyntax.term_of_int pos):word32``
+    val th = INST [pc_var1 |-> new_pc, pc_var2 |-> new_pc] th
+    val tms = find_terms (can (match_term arm_PC_pat)) (rand (concl th))
+    val rws = map (QCONV (RAND_CONV EVAL)) tms
+    val th = ONCE_REWRITE_RULE rws th
+    in th end
+end
+
   fun get_model_status_list th =
     (map dest_sep_hide o list_dest dest_star o snd o dest_eq o concl) th handle HOL_ERR e => []
   val delete_spaces = (implode o filter (fn x => not(x = #" ")) o explode)
