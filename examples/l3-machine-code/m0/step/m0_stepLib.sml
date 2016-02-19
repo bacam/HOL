@@ -449,7 +449,7 @@ in
                         (DATATYPE_CONV
                          THENC SIMP_CONV std_ss
                                   [alignmentTheory.aligned_add_sub_123,
-                                   word_bit_0_of_load, wordsTheory.word_mul_n2w]
+                                   (*word_bit_0_of_load,*) wordsTheory.word_mul_n2w]
                          THENC DATATYPE_CONV))
         |> addThms
    val LoadMultiple_rwt =
