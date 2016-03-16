@@ -235,7 +235,7 @@ fun export_graph name rhs = let
   fun term tm =
     (* Num *)
     (if numSyntax.is_numeral tm then
-      "Num " ^ int_to_string (tm |> numSyntax.int_of_term) ^ " Nat"
+      "Num " ^ int_to_string (tm |> numSyntax.int_of_term) ^ " Word 64"
     else if wordsSyntax.is_n2w tm then
       let val i = tm |> rand |> numSyntax.int_of_term
       in "Num " ^ int_to_string i ^ " " ^ export_type (type_of tm) end
