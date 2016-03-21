@@ -219,22 +219,28 @@ local
     val r14 = ``"r14"``
     val ret_str = ``"ret"``
     val r0_input_str = ``"r0_input"``
-    val (is_tail_call,ret) = let
+    val (next_instr,ret) = let
       val u = first (fn (t,x) => t = r14) supdate |> snd
-      val res = EVAL ``(^u s = VarWord32 (^pc1+4w)) \/ (^u s = VarWord32 (^pc1+2w))``
+      val ret = u |> dest_abs |> snd |> rand
+      val ret = EVAL ``^ret && ~1w`` |> concl |> rand
+      val res = EVAL ``(^ret = ^pc1+4w) \/ (^ret = ^pc1+2w)``
         |> concl |> rand
       in if res = T then
-           (false,mk_comb(``Jump``,u |> dest_abs |> snd |> rand))
-         else (true,``Return``) end handle HOL_ERR _ => (true,``Return``)
+           (SOME ret,mk_comb(``Jump``,ret))
+         else (NONE,``Return``) end handle HOL_ERR _ => (NONE,``Return``)
     fun get_assign tm =
-      if tm = r0_input_str then
-        pairSyntax.mk_pair(r0_input_str,``var_acc ^r0``)
-      else let
-        val tm2 = if is_tail_call then tm else
-                  if tm = ret_str then r14 else tm
-        val rhs = first (fn (t,x) => (t = tm2)) supdate |> snd
-                  handle HOL_ERR _ => ``var_acc ^tm``
-        in pairSyntax.mk_pair(tm,rhs) end
+      let fun get tm2 =
+              first (fn (t,x) => (t = tm2)) supdate |> snd
+              handle HOL_ERR _ => ``var_acc ^tm``
+          val rhs =
+              if tm = r0_input_str then
+                 ``var_acc ^r0``
+              else if tm = ret_str then
+                 case next_instr of
+                     NONE => get tm (* tail call *)
+                   | SOME rhs => mk_abs(s_var,``VarWord32 ^rhs``)
+              else get tm
+      in pairSyntax.mk_pair(tm,rhs) end
     val new_supdate = map get_assign ret_and_all_names
     val new_supdate = listSyntax.mk_list(new_supdate,type_of (hd new_supdate))
     val x = post |> rator |> rand |> rator
