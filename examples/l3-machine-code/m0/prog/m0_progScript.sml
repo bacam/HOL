@@ -252,18 +252,24 @@ val tac = asm_simp_tac (srw_ss()++wordsLib.WORD_CANCEL_ss)
 val top = utilsLib.rhsc (wordsLib.WORD_EVAL_CONV ``word_T : word32``)
 *)
 
+val imp_and = prove(``(P ==> Q) ==> (P /\ Q = P)``,
+                    Cases_on `P` \\ SIMP_TAC bool_ss [])
+
 val DISJOINT_m0_instr = Q.store_thm("DISJOINT_m0_instr",
    `!a pc x y.
-      3w <+ a /\ a <+ 0xFFFFFFFDw ==>
-      DISJOINT (m0_instr (pc + a, data_to_thumb2 x)) (m0_instr (pc, INL y))`,
-   rw [m0_instr_def, data_to_thumb2_def, byte_lem, pred_setTheory.DISJOINT_DEF]
-   \\ `a + 1w <> 0w` by blastLib.FULL_BBLAST_TAC
-   \\ `a + 2w <> 0w` by blastLib.FULL_BBLAST_TAC
-   \\ `a + 3w <> 0w` by blastLib.FULL_BBLAST_TAC
-   \\ `a <> 0w` by blastLib.FULL_BBLAST_TAC
-   \\ `3w <> a` by blastLib.FULL_BBLAST_TAC
-   \\ `2w <> a` by blastLib.FULL_BBLAST_TAC
-   \\ `1w <> a` by blastLib.FULL_BBLAST_TAC
+      0w <=+ a /\ a <+ 0xFFFFFFF9w ==>
+      (DISJOINT (m0_instr (align 2 (pc + 4w) + a, data_to_thumb2 x)) (m0_instr (pc, INL y)) /\
+       aligned 1 pc =
+      aligned 1 pc)`,
+   rw [m0_instr_def, data_to_thumb2_def, byte_lem, pred_setTheory.DISJOINT_DEF, alignmentTheory.align_def,alignmentTheory.aligned_def]
+   \\ ONCE_REWRITE_TAC [boolTheory.CONJ_COMM]
+   \\ MATCH_MP_TAC imp_and
+   \\ STRIP_TAC
+   \\ `a + (31 '' 2) (pc + 4w) <> pc` by blastLib.FULL_BBLAST_TAC
+   \\ `a + (31 '' 2) (pc + 4w) + 1w <> pc` by blastLib.FULL_BBLAST_TAC
+   \\ `a + (31 '' 2) (pc + 4w) + 2w <> pc` by blastLib.FULL_BBLAST_TAC
+   \\ `a + (31 '' 2) (pc + 4w) + 3w <> pc` by blastLib.FULL_BBLAST_TAC
+   \\ `a + (31 '' 2) (pc + 4w) <> pc + 1w` by blastLib.FULL_BBLAST_TAC
    \\ tac
    )
 
@@ -276,7 +282,7 @@ fun disjoint_m0_instr q =
    |> Drule.GEN_ALL
 
 val disjoint_m0_instr_thms = Theory.save_thm("disjoint_m0_instr_thms",
-   disjoint_m0_instr `w2w (w: word10) + 4w`
+   disjoint_m0_instr `w2w (w: word10)`
    )
 
 (* ------------------------------------------------------------------------ *)
