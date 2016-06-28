@@ -110,13 +110,14 @@ local
     in map mk_arb_pair [``r0:word32``,
              ``r1:word32``, ``r2:word32``, ``r3:word32``, ``r14:word32``,
              ``n:bool``, ``z:bool``, ``c:bool``, ``v:bool``] end
+  fun calc_dest x = EVAL ``^x && ~1w`` |> concl |> rand
 in
   fun approx_summary (i,(th1,i1,i2),thi2) =
     if not (has_call_tag th1) then summary (i,(th1,i1,i2),thi2) else let
       val res = summary (i,(th1,i1,i2),thi2)
       val (p1,assum1,u1,addr,q1) = hd res
       val r14 = mk_var("r14",``:word32``)
-      val dest = first (fn (x,_) => x = r14) u1 |> snd handle HOL_ERR _ => T
+      val dest = first (fn (x,_) => x = r14) u1 |> snd |> calc_dest handle HOL_ERR _ => T
       in (p1,assum1,call_update,addr,dest) :: tl res end
 end
 
