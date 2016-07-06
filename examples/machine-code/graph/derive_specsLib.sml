@@ -425,12 +425,18 @@ end
     in if not (has_free_vars c) then th else let
          fun do_inst tm = let
            val (pos_tm,v) = pairSyntax.dest_pair tm
+           val v = if is_comb v then rand v else v
            in v |-> get_local_const (pos_tm |> rand
                                             |> numSyntax.int_of_term) end
          val i = find_terms (fn tm => pairSyntax.is_pair tm andalso
                                       is_var (rand tm)) c
                  |> map (do_inst o rand o concl o QCONV EVAL)
-         val th = INST i th |> CONV_RULE (RATOR_CONV (RAND_CONV EVAL))
+         val i' = find_terms (fn tm => pairSyntax.is_pair tm andalso
+                                       is_comb (rand tm) andalso
+                                       same_const ``data_to_thumb2`` (rator (rand tm)) andalso
+                                       is_var (rand (rand tm))) c
+                  |> map (do_inst o rand o concl o QCONV (RATOR_CONV EVAL))
+         val th = INST (i@i') th |> CONV_RULE (RATOR_CONV (RAND_CONV EVAL))
          in th end end
 
   fun remove_tab s =
