@@ -1931,6 +1931,10 @@ local
    val Run_CONV = utilsLib.Run_CONV ("m0", st) o get_val
    fun is_ineq tm =
       boolSyntax.is_eq (boolSyntax.dest_neg tm) handle HOL_ERR _ => false
+   val SP_rwts = [INST [``b:bool`` |-> F] Aligned_SP_general,
+                  INST [``b:bool`` |-> T] Aligned_SP_general,
+                  INST [``b:bool`` |-> F] Aligned_SP_neg_general,
+                  INST [``b:bool`` |-> T] Aligned_SP_neg_general]
 in
    fun eval_thumb (be, sel) =
       let
@@ -1957,6 +1961,7 @@ in
                   else
                      (utilsLib.ALL_HYP_CONV_RULE (REWRITE_CONV ineq_hyps) thm2,
                       REWRITE_RULE ineq_hyps thm4)
+               val thm4 = REWRITE_RULE SP_rwts thm4
                val r = get_state thm4
                        handle HOL_ERR {origin_function = "dest_pair", ...} =>
                          (Parse.print_thm thm4

@@ -400,6 +400,18 @@ val Aligned_SP_neg = utilsLib.ustore_thm("Aligned_SP_neg",
    \\ blastLib.BBLAST_TAC
    )
 
+val Aligned_SP_general = utilsLib.ustore_thm("Aligned_SP_general",
+   `aligned 2 (s.REG (R_name b 13w)) ==> (s.REG (R_name b 13w) + a && 0xFFFFFFFCw = s.REG (R_name b 13w) + (a && 0xFFFFFFFCw))`,
+   simp [alignmentTheory.aligned_extract]
+   \\ blastLib.BBLAST_TAC
+   )
+
+val Aligned_SP_neg_general = utilsLib.ustore_thm("Aligned_SP_neg_general",
+   `aligned 2 (s.REG (R_name b 13w)) ==> (s.REG (R_name b 13w) - a && 0xFFFFFFFCw = s.REG (R_name b 13w) + (-a && 0xFFFFFFFCw))`,
+   simp [alignmentTheory.aligned_extract]
+   \\ blastLib.BBLAST_TAC
+   )
+
 val Aligned_Branch9 = utilsLib.ustore_thm("Aligned_Branch9",
    `aligned 1 (w:word32) ==>
     (((31 >< 1)
